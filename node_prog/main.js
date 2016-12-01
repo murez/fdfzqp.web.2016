@@ -13,17 +13,31 @@ var clockHandler = function (res)
 
 eventEmitter.on('clock_event',clockHandler);
 
-var server = http.createServer(function (req, resp) {
-    fs.readFile("data" + req.url,"binary",(err,data) =>
+var server = http.createServer(function (req, resp) 
+{
+    if(req.url == '/clock')
+    {
+        eventEmitter.emit('clock_event',resp);
+        return; 
+    }
+    fs.readFile('data' + req.url,function(err,data)
+    {
+        if(err)
         {
-            console.log("data" + req.url);
-            if(!err) 
-    {resp.writeHead(200);
-        resp.write(data);}
-            else
-    {resp.writeHead(404);
-     console.log('error!/n')}
-        })
+            console.log('No such file: ' + 'data' + req.url);
+            resp.writeHead(200,
+                {'Content-Type' : 'text/html',
+                 'Server' : 'test'});
+            resp.end("<html><body><s>No such file</s></body></html>");
+        }
+        else
+        {
+            console.log(data);
+            resp.writeHead(200);
+            resp.write(data);
+            resp.end();
+        }
+    })
 });
 server.listen(80);
 
